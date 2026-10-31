@@ -1,0 +1,7 @@
+# Name,     Type, SubType, Offset,   Size, Flags
+nvs,        data, nvs,     0xc000,   24K,
+phy_init,   data, phy,     ,   4K,
+model,      data, spiffs,           ,512K,
+factory,    app,  factory,      ,  0x700000,
+assets,     data, spiffs, ,  0x680000,
+fonts,      data, spiffs,           ,  512K,

@@ -1,0 +1,14 @@
+idf_component_register(
+    SRCS
+        "ethernet_service.c"
+        "ethernet_iperf.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        esp_eth
+        esp_event
+        esp_netif
+        ethernet_init
+        iperf
+        lwip
+)

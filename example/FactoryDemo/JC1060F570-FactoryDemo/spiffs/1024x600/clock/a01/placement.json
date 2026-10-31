@@ -1,0 +1,65 @@
+{
+  "screen": [
+    1024,
+    600
+  ],
+  "dial_file": "dial.png",
+  "dial_size": [
+    560,
+    560
+  ],
+  "dial_top_left": [
+    232,
+    20
+  ],
+  "screen_pivot": [
+    512,
+    300
+  ],
+  "hands": {
+    "hour_hand_12": {
+      "file": "hour.png",
+      "size": [
+        40,
+        207
+      ],
+      "pivot": [
+        20,
+        194
+      ]
+    },
+    "minute_hand_12": {
+      "file": "minute.png",
+      "size": [
+        34,
+        258
+      ],
+      "pivot": [
+        17,
+        245
+      ]
+    },
+    "second_hand_12": {
+      "file": "second.png",
+      "size": [
+        26,
+        331
+      ],
+      "pivot": [
+        13,
+        256
+      ]
+    },
+    "center_cap": {
+      "file": "cap.png",
+      "size": [
+        46,
+        46
+      ],
+      "pivot": [
+        23,
+        23
+      ]
+    }
+  }
+}

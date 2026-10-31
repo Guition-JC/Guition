@@ -1,0 +1,15 @@
+idf_component_register(
+    SRCS
+        "display.c"
+        "display_image_buffers.c"
+    INCLUDE_DIRS
+        "include"
+        "."
+    REQUIRES
+        esp_board_manager
+        esp_lvgl_adapter
+        lvgl
+        heap
+        esp_driver_ledc
+        nvs_flash
+)

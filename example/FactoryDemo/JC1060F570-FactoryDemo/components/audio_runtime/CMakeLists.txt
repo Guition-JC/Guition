@@ -1,0 +1,21 @@
+idf_component_register(
+    SRCS
+        "audio_runtime.c"
+        "audio_output.c"
+        "audio_input.c"
+        "audio_volume.c"
+        "audio_gmf.c"
+    INCLUDE_DIRS
+        "include"
+    PRIV_INCLUDE_DIRS
+        "."
+    REQUIRES
+        esp_board_manager
+        esp_codec_dev
+        gmf_core
+        gmf_loader
+        gmf_io
+        gmf_audio
+        esp_bt_audio
+        esp_audio_codec
+)

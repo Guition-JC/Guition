@@ -1,0 +1,27 @@
+idf_component_register(
+    SRCS
+        "music_player_service.c"
+        "music_player.c"
+        "music_player_state.c"
+        "music_sd_source.c"
+        "music_sd_catalog.c"
+        "music_bt_state.c"
+        "music_bt_source.c"
+        "music_bt_gmf.c"
+        "music_bt_power_store.c"
+        "music_volume_store.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        heap
+        audio_runtime
+        bt
+        esp_audio_codec
+        esp_bt_audio
+        gmf_audio
+        gmf_core
+        gmf_io
+        gmf_loader
+        memory_monitor
+        nvs_flash
+)

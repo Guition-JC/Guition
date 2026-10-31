@@ -1,0 +1,13 @@
+idf_component_register(
+    SRCS
+        "video_player_service.c"
+        "video_player_state.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        audio_runtime
+        esp_audio_codec
+        esp_codec_dev
+        esp_extractor
+        esp_video_codec
+)

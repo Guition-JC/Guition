@@ -1,6 +1,6 @@
-使用 ESP-IDF 6.1，推荐通过 [ESP-IDF Installation Manager（EIM）](https://docs.espressif.com/projects/idf-im-ui/en/latest/) 下载和安装。
+使用 ESP-IDF 推荐通过 [ESP-IDF Installation Manager（EIM）](https://docs.espressif.com/projects/idf-im-ui/en/latest/) 下载和安装。
 
-每次打开终端后，先激活环境。Bash/Zsh 使用：
+每次打开终端后，先激活环境,根据所需版本来配置环境，下面以v6.1为例，具体路径与版本根据实际情况进行替换。Bash/Zsh 使用：
 
 ```bash
 source ~/.espressif/tools/activate_idf_v6.1.sh
@@ -17,11 +17,11 @@ source ~/.espressif/tools/activate_idf_v6.1.fish
 从乐鑫组件中心获取示例工程：
 
 ```shell
-idf.py create-project-from-example "guition/guition_boards=0.2.1:display_lv_demo_widgets"
+idf.py create-project-from-example "guition/guition_boards=0.2.2:display_lv_demo_widgets"
 cd display_lv_demo_widgets
 ```
 
-该命令要求组件中心已发布的 `0.2.1` 包含 `display_lv_demo_widgets` 示例。`create-project-from-example` 创建独立的示例工程，后续配置或构建时自动下载组件依赖；仅执行 `add-dependency` 不会获取示例工程。示例已声明 `guition/guition_boards: "*"`，无须再次添加依赖。若需固定组件版本，在配置或构建前，将 `main/idf_component.yml` 中 `guition/guition_boards` 的版本改为 `"==0.2.1"`。
+该命令要求组件中心已发布的 `0.2.2` 包含 `display_lv_demo_widgets` 示例。`create-project-from-example` 创建独立的示例工程，后续配置或构建时自动下载组件依赖；仅执行 `add-dependency` 不会获取示例工程。示例已声明 `guition/guition_boards: "*"`，无须再次添加依赖。若需固定组件版本，在配置或构建前，将 `main/idf_component.yml` 中 `guition/guition_boards` 的版本改为 `"==0.2.2"`。
 
 使用本地仓库中的示例时，进入仓库的 `example/display/display_lv_demo_widgets` 目录即可；其板级支持仍由组件中心提供，首次解析依赖时下载满足工程约束的最新版本，也可按上述方式在清单中固定版本。
 

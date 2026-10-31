@@ -1,0 +1,14 @@
+idf_component_register(
+    SRCS
+        "ft_screen_sequence.c"
+        "ft_sd_probe.c"
+        "ft_audio_probe.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        heap
+        audio_runtime
+        esp_board_manager
+        esp_codec_dev
+        sdmmc
+)

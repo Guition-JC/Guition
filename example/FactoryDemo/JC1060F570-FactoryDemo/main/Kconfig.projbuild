@@ -1,0 +1,77 @@
+menu "FactoryDemo Configuration"
+
+    choice FACTORY_DESKTOP_ICON_SOURCE
+        prompt "Desktop icon source"
+        default FACTORY_DESKTOP_ICONS_SPIFFS
+        help
+            Select PNG files in the assets SPIFFS partition or LVGL image
+            descriptors compiled into the application for the selected panel.
+
+        config FACTORY_DESKTOP_ICONS_SPIFFS
+            bool "PNG files from SPIFFS"
+
+        config FACTORY_DESKTOP_ICONS_EMBEDDED
+            bool "Predecoded C images"
+    endchoice
+
+    config FACTORY_SNTP_SERVER
+        string "SNTP server"
+        default "pool.ntp.org"
+        help
+            Hostname used by the FactoryDemo time service after station IPv4 acquisition.
+
+    config FACTORY_UART_ENABLE
+        bool "Enable UART terminal"
+        default y
+        help
+            Enable the UART terminal application and its background RX task.
+
+    if FACTORY_UART_ENABLE
+
+    config FACTORY_UART_PORT
+        int "UART port number"
+        range 0 4
+        default 1
+        help
+            UART controller used by the terminal. Select a port that is not
+            reserved by the console or another peripheral.
+
+    config FACTORY_UART_TX_GPIO
+        int "UART TX GPIO"
+        range -1 61
+        default 18
+        help
+            GPIO used for UART TX. Set to -1 to leave the TX signal unused.
+
+    config FACTORY_UART_RX_GPIO
+        int "UART RX GPIO"
+        range -1 61
+        default 19
+        help
+            GPIO used for UART RX. Set to -1 to leave the RX signal unused.
+
+    config FACTORY_UART_BAUD_RATE
+        int "UART baud rate"
+        range 300 5000000
+        default 115200
+        help
+            UART baud rate.
+
+    config FACTORY_UART_RX_BUFFER_SIZE
+        int "UART RX buffer size"
+        range 256 16384
+        default 2048
+        help
+            Driver RX buffer size in bytes.
+
+    config FACTORY_UART_MESSAGE_MAX_LENGTH
+        int "Maximum message length"
+        range 32 512
+        default 128
+        help
+            Maximum text bytes stored for one received or transmitted message.
+            The terminal keeps at most 100 messages and evicts the oldest one.
+
+    endif
+
+endmenu

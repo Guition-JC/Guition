@@ -1,0 +1,12 @@
+idf_component_register(
+    SRCS
+        "power_idle.c"
+        "power_sleep.c"
+        "sleep_timeout.c"
+        "standby_prefs.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        display
+        nvs_flash
+)

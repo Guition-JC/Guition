@@ -1,0 +1,3 @@
+version: "0.1.0"
+description: "ESP-IDF RX8025/RX8035 RTC component"
+license: "GPL-2.0-only"

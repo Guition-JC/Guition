@@ -1,0 +1,20 @@
+idf_component_register(
+    SRCS
+        "aichat_app.c"
+        "aichat_state.c"
+        "aichat_history.c"
+        "aichat_audio_gmf.c"
+        "aichat_audio_playback.c"
+        "aichat_xiaozhi.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        audio_runtime
+        esp_audio_codec
+        esp_xiaozhi
+        gmf_ai_audio
+        gmf_audio
+        gmf_core
+        gmf_io
+        gmf_loader
+)

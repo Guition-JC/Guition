@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>JC1060 Settings</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, -apple-system, sans-serif; background: #eef5fb; color: #101a2b; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 20px; box-sizing: border-box; }
+    main { box-sizing: border-box; width: min(100%, 520px); background: #fff; border-radius: 22px; padding: 26px; box-shadow: 0 16px 45px #a5bad155; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    h1 { margin: 0; font-size: 24px; }
+    h2 { margin: 26px 0 8px; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: #53667b; }
+    .langs button { padding: 7px 11px; font-size: 14px; }
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 12px 0; }
+    .row > span:first-child { font-weight: 600; }
+    input[type=range] { width: 100%; margin: 0 0 4px; }
+    input[type=text], input[type=password], select { width: 100%; box-sizing: border-box; border: 1px solid #c9d8e7; border-radius: 12px; padding: 11px 12px; font-size: 16px; }
+    button { border: 0; border-radius: 12px; padding: 12px 18px; background: #147efb; color: #fff; font-size: 16px; font-weight: 650; }
+    button.ghost { background: #e2ecf6; color: #101a2b; }
+    a.button { display: inline-block; border-radius: 12px; padding: 10px 16px; background: #e2ecf6; color: #101a2b; font-weight: 650; text-decoration: none; }
+    button:disabled { opacity: .5; }
+    .value { font-variant-numeric: tabular-nums; color: #53667b; }
+    .field { margin: 14px 0; }
+    .field > label { display: block; font-weight: 600; margin-bottom: 6px; }
+    .hint { margin: 6px 0 0; font-size: 13px; line-height: 1.5; color: #53667b; }
+    .checks { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .checks label { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+    .media-list { max-height: 240px; overflow-y: auto; border: 1px solid #c9d8e7; border-radius: 12px; padding: 8px; }
+    .media-list label { display: flex; align-items: center; gap: 10px; min-height: 44px; overflow-wrap: anywhere; }
+    .weather-card { background: #f2f7fd; border-radius: 14px; padding: 14px; }
+    .weather-card .big { font-size: 20px; font-weight: 650; }
+    #message { min-height: 22px; margin-top: 14px; font-weight: 600; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1 data-i18n="title">设备设置</h1>
+    <div class="langs">
+      <button type="button" id="lang-zh" class="ghost">中文</button>
+      <button type="button" id="lang-en" class="ghost">English</button>
+    </div>
+  </header>
+
+  <h2 data-i18n="device">设备</h2>
+  <div class="row"><span data-i18n="brightness">亮度</span><span class="value" id="brightness-value">--</span></div>
+  <input type="range" id="brightness" min="0" max="100" step="1" data-i18n-aria="brightness">
+  <div class="row"><span data-i18n="volume">音量</span><span class="value" id="volume-value">--</span></div>
+  <input type="range" id="volume" min="0" max="100" step="1" data-i18n-aria="volume">
+  <div class="row"><span data-i18n="mute">静音</span><input type="checkbox" id="muted"></div>
+
+  <h2 data-i18n="standby">待机</h2>
+  <div class="field">
+    <label for="sleep-timeout" data-i18n="sleep-timeout">自动休眠</label>
+    <select id="sleep-timeout">
+      <option value="0" data-i18n="off">关闭</option>
+      <option value="30" data-i18n="seconds-30">30 秒</option>
+      <option value="60" data-i18n="minutes-1">1 分钟</option>
+      <option value="120" data-i18n="minutes-2">2 分钟</option>
+      <option value="300" data-i18n="minutes-5">5 分钟</option>
+    </select>
+  </div>
+  <div class="field">
+    <label for="standby-mode" data-i18n="standby-mode">待机内容</label>
+    <select id="standby-mode">
+      <option value="clock" data-i18n="clock">时钟</option>
+      <option value="photos" data-i18n="photos">图片</option>
+      <option value="video" data-i18n="video">视频</option>
+    </select>
+  </div>
+  <div class="field" id="photo-options" hidden>
+    <label for="photo-interval" data-i18n="photo-interval">图片间隔</label>
+    <select id="photo-interval">
+      <option value="3" data-i18n="seconds-3">3 秒</option>
+      <option value="5" data-i18n="seconds-5">5 秒</option>
+      <option value="10" data-i18n="seconds-10">10 秒</option>
+      <option value="30" data-i18n="seconds-30">30 秒</option>
+    </select>
+    <p data-i18n="select-photos">选择循环显示的图片（可多选）</p>
+    <div id="standby-photos" class="media-list" role="group" data-i18n-aria="select-photos"></div>
+  </div>
+  <div class="field" id="video-options" hidden>
+    <label for="standby-video" data-i18n="select-video">选择循环播放的视频</label>
+    <select id="standby-video"></select>
+    <p class="hint" data-i18n="video-hint">视频循环播放，不播放音频。</p>
+  </div>
+  <p class="hint" data-i18n="standby-hint">点击保存后，待机内容在下次进入待机时生效。</p>
+
+  <h2 data-i18n="weather">天气</h2>
+  <p class="hint" data-i18n="weather-hint">供应商、密钥、定位与当前读数在天气页面。</p>
+  <p><a class="button" href="/weather" data-i18n="weather-link">打开天气设置</a></p>
+
+  <h2 data-i18n="status-bar">状态栏显示</h2>
+  <div class="checks" id="fields">
+    <label><input type="checkbox" value="128"> <span data-i18n="field-place">地名</span></label>
+    <label><input type="checkbox" value="1"> <span data-i18n="field-condition-icon">天气图标</span></label>
+    <label><input type="checkbox" value="2"> <span data-i18n="field-condition-text">天气文字</span></label>
+    <label><input type="checkbox" value="4"> <span data-i18n="field-temperature">温度</span></label>
+    <label><input type="checkbox" value="8"> <span data-i18n="field-humidity">湿度</span></label>
+    <label><input type="checkbox" value="16"> <span data-i18n="field-wind-arrow">风向箭头</span></label>
+    <label><input type="checkbox" value="32"> <span data-i18n="field-wind-text">风向文字</span></label>
+    <label><input type="checkbox" value="64"> <span data-i18n="field-wind-speed">风速</span></label>
+  </div>
+
+  <div class="row">
+    <button type="button" id="save" data-i18n="save" disabled>保存</button>
+  </div>
+  <div id="message" role="status" aria-live="polite"></div>
+</main>
+<script>
+  const I18N = {
+    zh: {
+      title: "设备设置", device: "设备", weather: "天气", "status-bar": "状态栏显示",
+      "weather-hint": "供应商、密钥、定位与当前读数在天气页面。",
+      "weather-link": "打开天气设置",
+      brightness: "亮度", volume: "音量", mute: "静音",
+      standby: "待机", "sleep-timeout": "自动休眠", "standby-mode": "待机内容",
+      clock: "时钟", photos: "图片", video: "视频", "photo-interval": "图片间隔",
+      off: "关闭", "seconds-3": "3 秒", "seconds-5": "5 秒", "seconds-10": "10 秒", "seconds-30": "30 秒",
+      "minutes-1": "1 分钟", "minutes-2": "2 分钟", "minutes-5": "5 分钟",
+      "select-photos": "选择循环显示的图片（可多选）", "select-video": "选择循环播放的视频",
+      "video-hint": "视频循环播放，不播放音频。", "standby-hint": "点击保存后，待机内容在下次进入待机时生效。",
+      sd: "SD 卡", builtin: "内置", unavailable: "不可用", "no-photos": "没有可显示的图片",
+      "choose-video": "请选择视频", "choose-photos": "请至少选择一张图片", "fetch-failed": "无法读取设置，请刷新重试",
+      "field-condition-icon": "天气图标", "field-condition-text": "天气文字",
+      "field-place": "地名", "field-temperature": "温度", "field-humidity": "湿度",
+      "field-wind-arrow": "风向箭头", "field-wind-text": "风向文字", "field-wind-speed": "风速",
+      save: "保存",
+      "saving": "保存中…", saved: "设置已保存", "save-failed": "保存失败，请重试",
+      unsupported: "当前字体不支持中文界面",
+    },
+    en: {
+      title: "Device settings", device: "Device", weather: "Weather", "status-bar": "Status bar",
+      "weather-hint": "Provider, key, location and the current reading live on the weather page.",
+      "weather-link": "Open weather settings",
+      brightness: "Brightness", volume: "Volume", mute: "Mute",
+      standby: "Standby", "sleep-timeout": "Auto sleep", "standby-mode": "Standby content",
+      clock: "Clock", photos: "Photos", video: "Video", "photo-interval": "Photo interval",
+      off: "Off", "seconds-3": "3 seconds", "seconds-5": "5 seconds", "seconds-10": "10 seconds", "seconds-30": "30 seconds",
+      "minutes-1": "1 minute", "minutes-2": "2 minutes", "minutes-5": "5 minutes",
+      "select-photos": "Choose slideshow photos (multiple allowed)", "select-video": "Choose one video to loop",
+      "video-hint": "The video loops without audio.", "standby-hint": "Saved content takes effect the next time standby starts.",
+      sd: "SD card", builtin: "Built-in", unavailable: "Unavailable", "no-photos": "No displayable photos",
+      "choose-video": "Choose a video", "choose-photos": "Choose at least one photo", "fetch-failed": "Could not load settings. Please reload.",
+      "field-condition-icon": "Condition icon", "field-condition-text": "Condition text",
+      "field-place": "Place", "field-temperature": "Temperature", "field-humidity": "Humidity",
+      "field-wind-arrow": "Wind arrow", "field-wind-text": "Wind text", "field-wind-speed": "Wind speed",
+      save: "Save",
+      "saving": "Saving…", saved: "Settings saved", "save-failed": "Could not save, try again",
+      unsupported: "The current font has no Chinese glyphs",
+    },
+  };
+
+  const $ = (selector) => document.querySelector(selector);
+  const message = $("#message");
+  let language = "zh";
+  let settings = null;
+  let media = { photos: [], videos: [] };
+  const mediaKey = (item) => JSON.stringify({ source: item.source, name: item.name });
+
+  function renderStandbyMode() {
+    $("#photo-options").hidden = $("#standby-mode").value !== "photos";
+    $("#video-options").hidden = $("#standby-mode").value !== "video";
+  }
+
+  function mediaChoices(available, selected) {
+    const known = new Set(available.map(mediaKey));
+    return [...available, ...selected.filter(item => !known.has(mediaKey(item)))];
+  }
+
+  function mediaLabel(item, available) {
+    const missing = !available.some(entry => mediaKey(entry) === mediaKey(item));
+    return `${t(item.source === 0 ? "sd" : "builtin")}: ${item.name}${missing ? ` (${t("unavailable")})` : ""}`;
+  }
+
+  function renderStandby() {
+    const saved = settings.standby;
+    $("#sleep-timeout").value = settings.sleep_timeout_seconds;
+    $("#standby-mode").value = saved.mode;
+    $("#photo-interval").value = saved.photo_interval_seconds;
+    const list = $("#standby-photos");
+    list.replaceChildren();
+    for (const item of mediaChoices(media.photos, saved.photos)) {
+      const label = document.createElement("label");
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.value = mediaKey(item);
+      input.checked = saved.photos.some(entry => mediaKey(entry) === mediaKey(item));
+      const text = document.createElement("span");
+      text.textContent = mediaLabel(item, media.photos);
+      label.append(input, text);
+      list.append(label);
+    }
+    if (!list.children.length) list.textContent = t("no-photos");
+    const select = $("#standby-video");
+    select.replaceChildren(new Option(t("choose-video"), ""));
+    for (const item of mediaChoices(media.videos, saved.video ? [saved.video] : []))
+      select.add(new Option(mediaLabel(item, media.videos), mediaKey(item)));
+    select.value = saved.video ? mediaKey(saved.video) : "";
+    renderStandbyMode();
+  }
+
+  const t = (key) => (I18N[language][key] !== undefined ? I18N[language][key] : key);
+  function renderText() {
+    document.documentElement.lang = language === "zh" ? "zh-CN" : "en";
+    for (const element of document.querySelectorAll("[data-i18n]")) {
+      element.textContent = t(element.dataset.i18n);
+    }
+    for (const element of document.querySelectorAll("[data-i18n-aria]")) {
+      element.setAttribute("aria-label", t(element.dataset.i18nAria));
+    }
+    $("#lang-zh").disabled = language === "zh";
+    $("#lang-en").disabled = language === "en";
+  }
+
+  function renderSettings() {
+    $("#brightness").value = settings.brightness;
+    $("#brightness-value").textContent = `${settings.brightness}%`;
+    $("#volume").value = settings.volume;
+    $("#volume-value").textContent = `${settings.volume}%`;
+    $("#muted").checked = settings.muted;
+    for (const box of document.querySelectorAll("#fields input")) {
+      box.checked = (settings.weather.fields & Number(box.value)) !== 0;
+    }
+    $("#lang-zh").title = settings.chinese_available ? "" : t("unsupported");
+    renderText();
+    renderStandby();
+  }
+
+  async function loadSettings() {
+    const [response, mediaResponse] = await Promise.all([
+      fetch("/api/settings", { cache: "no-store" }),
+      fetch("/api/standby/media", { cache: "no-store" }),
+    ]);
+    const loaded = await response.json();
+    const catalog = await mediaResponse.json();
+    if (!response.ok || !mediaResponse.ok || !loaded.ok || !catalog.ok) throw new Error("load_failed");
+    settings = loaded;
+    media = catalog;
+    language = settings.language === "en" ? "en" : "zh";
+    renderSettings();
+    $("#save").disabled = false;
+  }
+
+  async function post(url, payload) {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    return response.json();
+  }
+
+  async function save() {
+    message.textContent = t("saving");
+    $("#save").disabled = true;
+    let fields = 0;
+    for (const box of document.querySelectorAll("#fields input")) {
+      if (box.checked) fields |= Number(box.value);
+    }
+    try {
+      const standby = {
+        mode: $("#standby-mode").value,
+        photo_interval_seconds: Number($("#photo-interval").value),
+        photos: [...document.querySelectorAll("#standby-photos input:checked")].map(input => JSON.parse(input.value)),
+        video: $("#standby-video").value ? JSON.parse($("#standby-video").value) : null,
+      };
+      if (standby.mode === "photos" && !standby.photos.length) throw new Error(t("choose-photos"));
+      if (standby.mode === "video" && !standby.video) throw new Error(t("choose-video"));
+      const result = await post("/api/settings", {
+        language,
+        brightness: Number($("#brightness").value),
+        volume: Number($("#volume").value),
+        muted: $("#muted").checked,
+        sleep_timeout_seconds: Number($("#sleep-timeout").value),
+        standby,
+        /** Apply the weather status-bar field mask. */
+        weather: { fields },
+      });
+      if (!result.ok) throw new Error(result.code || "rejected");
+      await loadSettings();
+      message.textContent = t("saved");
+    } catch (error) {
+      message.textContent = `${t("save-failed")} (${error.message})`;
+    } finally {
+      $("#save").disabled = false;
+    }
+  }
+
+  $("#save").addEventListener("click", save);
+  $("#standby-mode").addEventListener("change", renderStandbyMode);
+  $("#brightness").addEventListener("input", (event) => {
+    $("#brightness-value").textContent = `${event.target.value}%`;
+  });
+  $("#volume").addEventListener("input", (event) => {
+    $("#volume-value").textContent = `${event.target.value}%`;
+  });
+  for (const [id, code] of [["#lang-zh", "zh"], ["#lang-en", "en"]]) {
+    $(id).addEventListener("click", async () => {
+      language = code;
+      renderText();
+      await post("/api/settings", { language });
+      await loadSettings();
+    });
+  }
+
+  loadSettings().catch(() => {
+    message.textContent = t("fetch-failed");
+  });
+</script>
+</body>
+</html>

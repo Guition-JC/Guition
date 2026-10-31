@@ -1,0 +1,14 @@
+idf_component_register(
+    SRCS
+        "rtc_time.c"
+        "time_policy.c"
+        "time_service.c"
+        "time_settings.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        esp_board_manager
+        esp_netif
+        nvs_flash
+        rx8025
+)

@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>JC1060 Weather</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, -apple-system, sans-serif; background: #eef5fb; color: #101a2b; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 20px; box-sizing: border-box; }
+    main { box-sizing: border-box; width: min(100%, 520px); background: #fff; border-radius: 22px; padding: 26px; box-shadow: 0 16px 45px #a5bad155; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    h1 { margin: 0; font-size: 24px; }
+    h2 { margin: 26px 0 8px; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: #53667b; }
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 12px 0; }
+    input[type=text], input[type=password], select { width: 100%; box-sizing: border-box; border: 1px solid #c9d8e7; border-radius: 12px; padding: 11px 12px; font-size: 16px; }
+    button { border: 0; border-radius: 12px; padding: 12px 18px; background: #147efb; color: #fff; font-size: 16px; font-weight: 650; }
+    button.ghost { background: #e2ecf6; color: #101a2b; }
+    button:disabled { opacity: .5; }
+    a.button { display: inline-block; border-radius: 12px; padding: 10px 16px; background: #e2ecf6; color: #101a2b; font-weight: 650; text-decoration: none; }
+    .field { margin: 14px 0; }
+    .field > label { display: block; font-weight: 600; margin-bottom: 6px; }
+    .hint { margin: 6px 0 0; font-size: 13px; line-height: 1.5; color: #53667b; }
+    .checks { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .checks label { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+    .weather-card { background: #f2f7fd; border-radius: 14px; padding: 14px; }
+    .weather-card .big { font-size: 20px; font-weight: 650; }
+    #message { min-height: 22px; margin-top: 14px; font-weight: 600; }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1 data-i18n="title">天气</h1>
+    <a class="button" href="/" data-i18n="back">设备设置</a>
+  </header>
+
+  <h2 data-i18n="weather">天气</h2>
+  <div class="field">
+    <label for="provider" data-i18n="provider">天气服务</label>
+    <select id="provider">
+      <option value="openweather">OpenWeather</option>
+      <option value="seniverse" id="provider-seniverse">心知天气</option>
+    </select>
+    <p class="hint" id="provider-hint"></p>
+  </div>
+  <div class="field">
+    <label for="key" data-i18n="api-key">API Key</label>
+    <input type="password" id="key" autocomplete="off" spellcheck="false">
+    <p class="hint" id="key-hint"></p>
+  </div>
+  <div class="field">
+    <span class="label" data-i18n="location" style="display:block;font-weight:600;margin-bottom:6px">定位方式</span>
+    <div class="checks">
+      <label><input type="radio" name="location" value="ip"> <span data-i18n="location-ip">自动定位（IP）</span></label>
+      <label><input type="radio" name="location" value="city"> <span data-i18n="location-city">手动输入城市</span></label>
+    </div>
+    <p class="hint" id="location-hint"></p>
+  </div>
+  <div class="field" id="city-field">
+    <label for="city" data-i18n="city">城市</label>
+    <input type="text" id="city" maxlength="48" spellcheck="false">
+    <p class="hint" id="city-hint"></p>
+  </div>
+
+  <h2 data-i18n="current">当前天气</h2>
+  <div class="weather-card">
+    <div class="big" id="weather-line">--</div>
+    <p class="hint" id="weather-meta"></p>
+  </div>
+  <div class="row">
+    <button type="button" class="ghost" id="refresh" data-i18n="refresh">立即更新</button>
+    <button type="button" id="save" data-i18n="save">保存</button>
+  </div>
+  <div id="message" role="status" aria-live="polite"></div>
+</main>
+<script>
+  const I18N = {
+    zh: {
+      title: "天气", back: "设备设置", weather: "天气", current: "当前天气",
+      provider: "天气服务", "api-key": "API Key", location: "定位方式",
+      "location-ip": "自动定位（IP）", "location-city": "手动输入城市", city: "城市",
+      refresh: "立即更新", save: "保存",
+      "provider-seniverse": "心知天气",
+      "provider-hint": "天气文字与地名按当前界面语言显示（两家都支持中文与英文）。",
+      "key-set": "已保存密钥，留空表示不修改", "key-empty": "请输入供应商提供的 API Key",
+      "city-hint-openweather": "城市名,国家码 — 例如 Beijing,CN 或 北京,CN",
+      "city-hint-seniverse": "城市名或拼音 — 例如 北京 或 beijing",
+      "location-hint-ip-seniverse": "由心知天气按设备公网 IP 定位。",
+      "location-hint-ip-openweather": "设备公网 IP 由第三方城市库解析成城市后查询。",
+      "saving": "保存中…", saved: "设置已保存", "save-failed": "保存失败，请重试",
+      "fetching": "正在获取天气…", "fetch-failed": "天气获取失败，请检查 API Key 与城市",
+      updated: "更新时间", never: "暂无数据", unsupported: "当前字体不支持中文界面",
+    },
+    en: {
+      title: "Weather", back: "Device settings", weather: "Weather", current: "Current weather",
+      provider: "Provider", "api-key": "API key", location: "Location",
+      "location-ip": "Automatic (IP)", "location-city": "Enter a city", city: "City",
+      refresh: "Update now", save: "Save",
+      "provider-seniverse": "Seniverse",
+      "provider-hint": "Weather wording and the place name follow the interface language (both providers support Chinese and English).",
+      "key-set": "A key is stored; leave empty to keep it", "key-empty": "Paste the key from your provider",
+      "city-hint-openweather": "City,Country code — for example Beijing,CN",
+      "city-hint-seniverse": "City name or pinyin — for example Beijing or beijing",
+      "location-hint-ip-seniverse": "Seniverse resolves the device's public IP itself.",
+      "location-hint-ip-openweather": "The public IP is resolved by a third-party city database first.",
+      "saving": "Saving…", saved: "Settings saved", "save-failed": "Could not save, try again",
+      "fetching": "Fetching weather…", "fetch-failed": "Weather fetch failed; check the key and city",
+      updated: "Updated", never: "No reading yet", unsupported: "The current font has no Chinese glyphs",
+    },
+  };
+  const CONDITIONS = {
+    clear: ["晴", "Clear"], "partly-cloudy": ["少云", "Partly cloudy"], cloudy: ["多云", "Cloudy"],
+    overcast: ["阴", "Overcast"], rain: ["雨", "Rain"], thunder: ["雷阵雨", "Thunderstorm"],
+    snow: ["雪", "Snow"], fog: ["雾", "Fog"], haze: ["霾", "Haze"], wind: ["大风", "Windy"],
+    unknown: ["未知", "Unknown"],
+  };
+  const WINDS = {
+    n: ["北", "N"], ne: ["东北", "NE"], e: ["东", "E"], se: ["东南", "SE"],
+    s: ["南", "S"], sw: ["西南", "SW"], w: ["西", "W"], nw: ["西北", "NW"],
+  };
+
+  const $ = (selector) => document.querySelector(selector);
+  const providerSelect = $("#provider");
+  const cityField = $("#city-field");
+  const cityInput = $("#city");
+  const keyInput = $("#key");
+  const message = $("#message");
+  let language = "zh";
+  let state = null;
+
+  const t = (key) => (I18N[language][key] !== undefined ? I18N[language][key] : key);
+  const localizedPair = (table, id, fallback) => {
+    const entry = table[id] || table[fallback];
+    return language === "zh" ? entry[0] : entry[1];
+  };
+  const locationMode = () => document.querySelector("input[name=location]:checked").value;
+
+  function renderText() {
+    document.documentElement.lang = language === "zh" ? "zh-CN" : "en";
+    for (const element of document.querySelectorAll("[data-i18n]")) {
+      element.textContent = t(element.dataset.i18n);
+    }
+    for (const element of document.querySelectorAll("[data-i18n-aria]")) {
+      element.setAttribute("aria-label", t(element.dataset.i18nAria));
+    }
+    $("#provider-seniverse").textContent = t("provider-seniverse");
+    $("#provider-hint").textContent = t("provider-hint");
+    if (state) {
+      $("#key-hint").textContent = state.weather.key_set ? t("key-set") : t("key-empty");
+      const provider = providerSelect.value;
+      $("#city-hint").textContent = t(`city-hint-${provider}`);
+      $("#location-hint").textContent =
+        locationMode() === "ip" ? t(`location-hint-ip-${provider}`) : "";
+      cityField.hidden = locationMode() !== "city";
+    }
+    renderWeather();
+  }
+
+  function renderWeather() {
+    if (!state) return;
+    const weather = state.weather;
+    if (!weather.valid) {
+      $("#weather-line").textContent = weather.error ? t("fetch-failed") : t("never");
+      $("#weather-meta").textContent = "";
+      return;
+    }
+    const parts = [
+      localizedPair(CONDITIONS, weather.condition, "unknown"),
+      `${weather.temp_c}°C`,
+      localizedPair(WINDS, weather.wind, "n"),
+    ];
+    /** Hide fields whose provider value is unavailable (-1). */
+    if (weather.humidity >= 0) parts.splice(2, 0, `${weather.humidity}%`);
+    if (weather.wind_dmps >= 0) parts.push(`${(weather.wind_dmps / 10).toFixed(1)}m/s`);
+    $("#weather-line").textContent = parts.join("  ");
+    const place = weather.place ? `${weather.place} · ` : "";
+    const stamp = weather.updated > 1600000000
+      ? `${t("updated")} ${new Date(weather.updated * 1000).toLocaleString()}`
+      : t("never");
+    $("#weather-meta").textContent = place + stamp;
+  }
+
+  function renderState() {
+    providerSelect.value = state.weather.provider;
+    cityInput.value = state.weather.city;
+    for (const radio of document.querySelectorAll("input[name=location]")) {
+      radio.checked = radio.value === state.weather.location;
+    }
+    renderText();
+  }
+
+  async function loadState() {
+    const response = await fetch("/api/weather", { cache: "no-store" });
+    state = await response.json();
+    language = state.language === "en" ? "en" : "zh";
+    renderState();
+  }
+
+  async function post(url, payload) {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    return response.json();
+  }
+
+  async function save() {
+    message.textContent = t("saving");
+    $("#save").disabled = true;
+    try {
+      const result = await post("/api/weather", {
+        weather: {
+          provider: providerSelect.value,
+          key: keyInput.value,
+          location: locationMode(),
+          city: cityInput.value.trim(),
+        },
+      });
+      if (!result.ok) throw new Error(result.code || "rejected");
+      keyInput.value = "";
+      await loadState();
+      message.textContent = t("saved");
+      watchWeather();
+    } catch (error) {
+      message.textContent = `${t("save-failed")} (${error.message})`;
+    } finally {
+      $("#save").disabled = false;
+    }
+  }
+
+  /** Poll for weather data after requesting a device refresh. */
+  function watchWeather() {
+    const before = state.weather.updated;
+    let attempts = 0;
+    const timer = window.setInterval(async () => {
+      attempts += 1;
+      const response = await fetch("/api/weather", { cache: "no-store" });
+      const result = await response.json();
+      state.weather = result.weather;
+      renderWeather();
+      const settled = result.weather.updated > before || (result.weather.valid === false && attempts > 3);
+      if (settled || attempts >= 8) window.clearInterval(timer);
+    }, 1500);
+  }
+
+  $("#save").addEventListener("click", save);
+  $("#refresh").addEventListener("click", async () => {
+    message.textContent = t("fetching");
+    await post("/api/weather/refresh", {});
+    watchWeather();
+  });
+  providerSelect.addEventListener("change", () => {
+    const choices = {
+      openweather: ["Beijing,CN", "Beijing,CN"],
+      seniverse: ["北京", "Beijing"],
+    }[providerSelect.value];
+    cityInput.placeholder = choices[language === "zh" ? 0 : 1];
+    renderText();
+  });
+  for (const radio of document.querySelectorAll("input[name=location]")) {
+    radio.addEventListener("change", renderText);
+  }
+
+  loadState().catch(() => {
+    message.textContent = t("fetch-failed");
+  });
+</script>
+</body>
+</html>

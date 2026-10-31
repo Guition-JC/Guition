@@ -1,0 +1,14 @@
+idf_component_register(
+    SRCS
+        "assets_storage.c"
+        "assets_decoder_compat.c"
+        "wallpaper_store.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        esp_lv_decoder
+        lvgl
+        esp_partition
+        nvs_flash
+        spiffs
+)

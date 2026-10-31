@@ -1,0 +1,10 @@
+idf_component_register(
+    SRCS
+        "spectrum_fft.c"
+        "spectrum_bars.c"
+        "spectrum_prefs_store.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        nvs_flash
+)

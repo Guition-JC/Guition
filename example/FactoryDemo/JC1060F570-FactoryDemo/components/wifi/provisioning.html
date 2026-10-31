@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>JC1060 Wi-Fi 配网</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, -apple-system, sans-serif; background: #eef5fb; color: #122033; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 20px; box-sizing: border-box; }
+    main { box-sizing: border-box; width: min(100%, 460px); background: #fff; border-radius: 22px; padding: 28px; box-shadow: 0 16px 45px #a5bad155; }
+    h1 { margin: 0 0 8px; font-size: 26px; } p { color: #53667b; line-height: 1.55; }
+    label { display: block; margin: 20px 0 7px; font-weight: 650; }
+    input, select { width: 100%; box-sizing: border-box; border: 1px solid #c9d8e7; border-radius: 12px; padding: 13px 14px; font-size: 16px; }
+    button { width: 100%; border: 0; border-radius: 12px; padding: 14px; margin-top: 24px; background: #147efb; color: white; font-size: 16px; font-weight: 700; }
+    button:disabled { opacity: .55; } #message { min-height: 24px; margin-top: 18px; font-weight: 600; }
+    .language-switch { display: flex; justify-content: flex-end; gap: 6px; margin-bottom: 12px; }
+    .language-switch button { width: auto; margin: 0; padding: 7px 11px; background: #e7f0fa; color: #31506b; font-size: 13px; }
+    .language-switch button[aria-pressed="true"] { background: #147efb; color: white; }
+    button { cursor: pointer; }
+    [hidden] { display: none !important; }
+    .hint { font-size: 13px; }
+  </style>
+</head>
+<body>
+<main>
+  <nav class="language-switch" aria-label="Language / 语言">
+    <button type="button" data-language="zh" aria-pressed="true">中文</button>
+    <button type="button" data-language="en" aria-pressed="false">English</button>
+  </nav>
+  <h1 data-i18n="heading">连接设备到 Wi-Fi</h1>
+  <p data-i18n="intro">设备已建立安全配网热点。选择设备扫描到的家庭或办公 Wi-Fi，提交后设备会尝试连接。</p>
+  <form id="wifi-form">
+    <input type="hidden" name="token" value="__PROVISIONING_TOKEN__">
+    <label for="networks" data-i18n="nearby">附近 Wi-Fi</label>
+    <select id="networks" required aria-describedby="scan-message">
+      <option value="" data-i18n="loading">正在获取 Wi-Fi 列表…</option>
+    </select>
+    <button id="refresh" type="button" data-i18n="refresh">刷新 Wi-Fi 列表</button>
+    <div id="scan-message" class="hint" role="status" aria-live="polite"></div>
+    <label for="manual"><input id="manual" type="checkbox" style="width:auto"> <span data-i18n="manual">手动输入隐藏网络</span></label>
+    <div id="manual-fields" hidden>
+      <label for="ssid" data-i18n="ssid">Wi-Fi 名称（SSID）</label>
+      <input id="ssid" name="ssid" required maxlength="32" placeholder="请准确输入隐藏网络名称" data-i18n-placeholder="ssidHint">
+    </div>
+    <label for="security" data-i18n="security">网络安全类型</label>
+    <select id="security" name="security" required>
+      <option value="psk" selected data-i18n="psk">加密网络（PSK）</option>
+      <option value="open" data-i18n="open">开放网络</option>
+    </select>
+    <label for="password" data-i18n="password">Wi-Fi 密码</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" maxlength="63" required placeholder="输入 8 至 63 字节密码">
+    <button id="submit" type="submit" data-i18n="submit">开始连接</button>
+  </form>
+  <div id="message" role="status"></div>
+  <p class="hint" data-i18n="footer">提交后请保持设备通电。若连接失败，请在设备上重新启动配网获取新的验证码后再试。</p>
+</main>
+<script>
+  const translations = {
+    zh: {
+      title: 'JC1060 Wi-Fi 配网', heading: '连接设备到 Wi-Fi',
+      intro: '设备已建立安全配网热点。选择设备扫描到的家庭或办公 Wi-Fi，提交后设备会尝试连接。',
+      nearby: '附近 Wi-Fi', loading: '正在获取 Wi-Fi 列表…', refresh: '刷新 Wi-Fi 列表',
+      manual: '手动输入隐藏网络', ssid: 'Wi-Fi 名称（SSID）', ssidHint: '请准确输入隐藏网络名称',
+      security: '网络安全类型', psk: '加密网络（PSK）', open: '开放网络', password: 'Wi-Fi 密码',
+      passwordHint: '输入 8 至 63 字节密码', openPasswordHint: '开放网络无需密码',
+      submit: '开始连接', footer: '提交后请保持设备通电。若连接失败，请在设备上重新启动配网获取新的验证码后再试。',
+      ssidTooLong: 'Wi-Fi 名称不能超过 32 字节', passwordLength: '加密网络密码需为 8 至 63 字节',
+      scanning: '正在扫描附近 Wi-Fi…', choose: '请选择 Wi-Fi', openShort: '开放', encryptedShort: '加密',
+      found: count => `发现 ${count} 个网络，请选择后输入密码`,
+      empty: '未发现网络，请刷新重试，或手动输入隐藏网络',
+      scanFailed: '获取列表失败，设备可能正忙；请保持连接配网热点并点击刷新',
+      connecting: '正在连接…', connected: '连接成功，设备正在切换网络',
+      failed: '连接失败，请重新启动配网后再试',
+      completed: '设备已返回最终状态', waiting: '正在等待设备状态…',
+      hotspotClosed: '设备正在完成连接，配网热点已关闭',
+      hotspotLost: '配网热点连接已中断，请查看设备屏幕确认结果',
+      noFinalState: '设备仍未返回最终状态，请查看设备屏幕',
+      waitScan: '正在扫描，请等待列表更新后再连接',
+      invalidForm: '请选择 Wi-Fi，并检查名称和密码是否有效',
+      submitting: '正在提交...', rejected: '连接请求未被接受',
+      requestFailed: '网络请求失败，请重新连接配网热点后重试'
+    },
+    en: {
+      title: 'JC1060 Wi-Fi Setup', heading: 'Connect the device to Wi-Fi',
+      intro: 'The device has opened a secure setup hotspot. Select a nearby home or office Wi-Fi network, then submit to connect.',
+      nearby: 'Nearby Wi-Fi', loading: 'Loading Wi-Fi networks…', refresh: 'Refresh Wi-Fi list',
+      manual: 'Enter a hidden network manually', ssid: 'Wi-Fi name (SSID)', ssidHint: 'Enter the hidden network name exactly',
+      security: 'Network security', psk: 'Protected network (PSK)', open: 'Open network', password: 'Wi-Fi password',
+      passwordHint: 'Enter a password of 8 to 63 bytes', openPasswordHint: 'No password required',
+      submit: 'Connect', footer: 'Keep the device powered on after submitting. If connection fails, restart setup on the device to get a new code.',
+      ssidTooLong: 'Wi-Fi name cannot exceed 32 bytes', passwordLength: 'Protected network password must be 8 to 63 bytes',
+      scanning: 'Scanning nearby Wi-Fi…', choose: 'Select a Wi-Fi network', openShort: 'Open', encryptedShort: 'Protected',
+      found: count => `Found ${count} networks. Select one and enter its password`,
+      empty: 'No networks found. Refresh or enter a hidden network manually',
+      scanFailed: 'Could not load networks. Stay connected to the setup hotspot and try Refresh',
+      connecting: 'Connecting…', connected: 'Connected. The device is switching networks',
+      failed: 'Connection failed. Restart setup on the device and try again',
+      completed: 'The device returned a final status', waiting: 'Waiting for device status…',
+      hotspotClosed: 'The device is finishing the connection; the setup hotspot has closed',
+      hotspotLost: 'Connection to the setup hotspot was lost. Check the device screen',
+      noFinalState: 'The device has not returned a final status. Check its screen',
+      waitScan: 'Wait for the network scan to finish before connecting',
+      invalidForm: 'Select Wi-Fi and check the name and password',
+      submitting: 'Submitting…', rejected: 'Connection request was rejected',
+      requestFailed: 'Network request failed. Reconnect to the setup hotspot and try again'
+    }
+  };
+  let language = '__PROVISIONING_LANGUAGE__' === 'zh' ? 'zh' : 'en';
+  const t = (key, ...args) => {
+    const value = translations[language][key];
+    return typeof value === 'function' ? value(...args) : value;
+  };
+  const form = document.querySelector('#wifi-form');
+  const button = document.querySelector('#submit');
+  const message = document.querySelector('#message');
+  const security = document.querySelector('#security');
+  const password = document.querySelector('#password');
+  const networks = document.querySelector('#networks');
+  const refresh = document.querySelector('#refresh');
+  const scanMessage = document.querySelector('#scan-message');
+  const manual = document.querySelector('#manual');
+  const manualFields = document.querySelector('#manual-fields');
+  const ssid = document.querySelector('#ssid');
+  let scanBusy = false;
+  let connecting = false;
+  let availableNetworks = [];
+  let scanState = null;
+  let messageState = null;
+  const showScan = (key, ...args) => {
+    scanState = { key, args };
+    scanMessage.textContent = t(key, ...args);
+  };
+  const showMessage = (key) => {
+    messageState = key;
+    message.textContent = t(key);
+  };
+  const renderNetworks = (selectedSSID = ssid.value, selectedSecurity = security.value) => {
+    networks.replaceChildren(new Option(t('choose'), ''));
+    for (const [index, ap] of availableNetworks.entries()) {
+      const label = `${ap.ssid} (${ap.rssi} dBm · ${ap.security === 'open' ? t('openShort') : t('encryptedShort')})`;
+      const option = new Option(label, String(index));
+      option.selected = ap.ssid === selectedSSID && ap.security === selectedSecurity;
+      networks.add(option);
+    }
+  };
+  const setLanguage = (nextLanguage) => {
+    language = nextLanguage === 'zh' ? 'zh' : 'en';
+    document.documentElement.lang = language === 'zh' ? 'zh-CN' : 'en';
+    document.title = t('title');
+    for (const element of document.querySelectorAll('[data-i18n]')) {
+      element.textContent = t(element.dataset.i18n);
+    }
+    for (const element of document.querySelectorAll('[data-i18n-placeholder]')) {
+      element.placeholder = t(element.dataset.i18nPlaceholder);
+    }
+    for (const button of document.querySelectorAll('[data-language]')) {
+      button.setAttribute('aria-pressed', String(button.dataset.language === language));
+    }
+    if (availableNetworks.length) renderNetworks();
+    if (scanState) scanMessage.textContent = t(scanState.key, ...scanState.args);
+    if (messageState) message.textContent = t(messageState);
+    updatePasswordPolicy();
+    ssid.setCustomValidity(new TextEncoder().encode(ssid.value).length > 32 ? t('ssidTooLong') : '');
+  };
+  for (const button of document.querySelectorAll('[data-language]')) {
+    button.addEventListener('click', () => setLanguage(button.dataset.language));
+  }
+  const syncSelection = () => {
+    manualFields.hidden = !manual.checked;
+    ssid.readOnly = !manual.checked;
+    networks.disabled = manual.checked || connecting;
+    networks.required = !manual.checked;
+    security.disabled = !manual.checked || connecting;
+    if (!manual.checked) {
+      const selected = availableNetworks[Number(networks.value)];
+      ssid.value = networks.value !== '' && selected ? selected.ssid : '';
+      security.value = selected ? selected.security : 'psk';
+    }
+    updatePasswordPolicy();
+    ssid.setCustomValidity(new TextEncoder().encode(ssid.value).length > 32
+      ? t('ssidTooLong') : '');
+  };
+  const setConnecting = (value) => {
+    connecting = value;
+    refresh.disabled = value || scanBusy;
+    manual.disabled = value;
+    syncSelection();
+  };
+  const passwordByteLength = () => new TextEncoder().encode(password.value).length;
+  const updatePasswordPolicy = () => {
+    const isOpen = security.value === 'open';
+    password.disabled = isOpen;
+    password.required = !isOpen;
+    password.maxLength = 63;
+    password.placeholder = isOpen ? t('openPasswordHint') : t('passwordHint');
+    if (isOpen) {
+      password.value = '';
+      password.setCustomValidity('');
+    } else if (password.value !== '' && (passwordByteLength() < 8 || passwordByteLength() > 63)) {
+      password.setCustomValidity(t('passwordLength'));
+    } else {
+      password.setCustomValidity('');
+    }
+  };
+  security.addEventListener('change', updatePasswordPolicy);
+  password.addEventListener('input', updatePasswordPolicy);
+  setLanguage(language);
+  networks.addEventListener('change', syncSelection);
+  manual.addEventListener('change', syncSelection);
+  ssid.addEventListener('input', syncSelection);
+  const loadNetworks = async () => {
+    if (scanBusy || connecting) return;
+    scanBusy = true;
+    refresh.disabled = true;
+    showScan('scanning');
+    const previousSSID = ssid.value;
+    const previousSecurity = security.value;
+    try {
+      for (let attempt = 0; attempt < 30; attempt += 1) {
+        const response = await fetch(attempt === 0 ? '/api/networks?refresh=1' : '/api/networks',
+          { cache: 'no-store', signal: AbortSignal.timeout(5000) });
+        if (!response.ok) throw new Error('scan request failed');
+        const result = await response.json();
+        if (!result.ok || !Array.isArray(result.networks) || typeof result.scanning !== 'boolean') {
+          throw new Error('invalid scan response');
+        }
+        if (!result.scanning) {
+          availableNetworks = result.networks;
+          renderNetworks(previousSSID, previousSecurity);
+          syncSelection();
+          showScan(availableNetworks.length ? 'found' : 'empty', availableNetworks.length);
+          return;
+        }
+        await new Promise(resolve => setTimeout(resolve, 750));
+      }
+      throw new Error('scan timeout');
+    } catch (error) {
+      showScan('scanFailed');
+    } finally {
+      scanBusy = false;
+      refresh.disabled = connecting;
+    }
+  };
+  refresh.addEventListener('click', loadNetworks);
+  syncSelection();
+  void loadNetworks();
+  const POLL_INTERVAL_MS = 750;
+  const MAX_STATUS_POLLS = 80;
+  const statusStates = new Set(['idle', 'scanning', 'ready', 'connecting', 'connected', 'failed']);
+  let pollTimer = null;
+  let sawConnected = false;
+
+  const stopPolling = () => {
+    if (pollTimer !== null) {
+      clearTimeout(pollTimer);
+      pollTimer = null;
+    }
+  };
+
+  const showPollingError = () => {
+    showMessage(sawConnected ? 'hotspotClosed' : 'hotspotLost');
+  };
+
+  const pollStatus = async () => {
+    for (let attempt = 0; attempt < MAX_STATUS_POLLS; attempt += 1) {
+      await new Promise((resolve) => {
+        pollTimer = setTimeout(resolve, POLL_INTERVAL_MS);
+      });
+      pollTimer = null;
+      try {
+        const response = await fetch('/api/status', { cache: 'no-store' });
+        if (!response.ok) throw new Error('status request failed');
+        const result = await response.json();
+        if (!result || !statusStates.has(result.state) || typeof result.terminal !== 'boolean') {
+          throw new Error('invalid status response');
+        }
+        if (result.state === 'connected') sawConnected = true;
+        if (result.terminal) {
+          showMessage(['connected', 'failed'].includes(result.state) ? result.state : 'completed');
+          if (result.state === 'failed') {
+            setConnecting(false);
+            button.disabled = true; // The provisioning token is single-use.
+          }
+          return;
+        }
+        showMessage(result.state === 'connecting' ? 'connecting' : 'waiting');
+      } catch (error) {
+        stopPolling();
+        showPollingError();
+        button.disabled = true;
+        return;
+      }
+    }
+    stopPolling();
+    showMessage('noFinalState');
+    button.disabled = true;
+  };
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (connecting) return;
+    stopPolling();
+    if (scanBusy) {
+      showMessage('waitScan');
+      return;
+    }
+    syncSelection();
+    if (!form.reportValidity()) {
+      showMessage('invalidForm');
+      return;
+    }
+    button.disabled = true;
+    setConnecting(true);
+    sawConnected = false;
+    showMessage('submitting');
+    try {
+      const body = new URLSearchParams(new FormData(form));
+      body.set('security', security.value); // Disabled auto-detected field is not in FormData.
+      const response = await fetch('/api/wifi', { method: 'POST', body });
+      const result = await response.json();
+      if (!response.ok || !result.ok) {
+        showMessage('rejected');
+        button.disabled = false;
+        setConnecting(false);
+        return;
+      }
+      showMessage('connecting');
+      void pollStatus();
+    } catch (error) {
+      showMessage('requestFailed');
+      button.disabled = false;
+      setConnecting(false);
+    }
+  });
+</script>
+</body>
+</html>

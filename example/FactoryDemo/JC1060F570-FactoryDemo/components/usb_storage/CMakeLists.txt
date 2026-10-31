@@ -1,0 +1,15 @@
+idf_component_register(
+    SRCS
+        "usb_storage_controller.c"
+        "usb_storage_state.c"
+        "usb_msc_host.c"
+        "usb_msc_device.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        esp_board_manager
+        esp_tinyusb
+        fatfs
+        usb_host_msc
+        vfs
+)

@@ -1,0 +1,28 @@
+## IDF Component Manager Manifest File
+dependencies:
+  idf:
+    version: '>=6.2.0'
+  espressif/esp_board_manager: ^0.7.0
+  lvgl/lvgl: ^9.6.0
+  espressif/esp_lvgl_adapter: ^0.7.1
+  espressif/gmf_core: ^1.0.1
+  espressif/gmf_audio: ^1.0.1~1
+  espressif/gmf_loader: ^1.0.0~2
+  espressif/gmf_io: ^1.0.1~1
+  # Pinned: gmf_ai_audio 1.0.2 pulls esp-sr 2.5.x, which adds esp-dl.
+  # esp-dl 3.3.11 does not compile with the GCC 16 toolchain of IDF master
+  # (-Werror=non-c-typedef-for-linkage) and adds ~1.7M to the app image.
+  espressif/gmf_ai_audio: '1.0.1~1'
+  espressif/esp_audio_codec: ^2.5.0
+  espressif/esp_bt_audio: ^1.1.0~1
+  espressif/esp_extractor: ^1.0.4
+  espressif/esp_video_codec: ^0.5.6
+  espressif/usb_host_msc: ^1.2.0
+  espressif/esp_tinyusb: ^2.2.1
+  espressif/ethernet_init:
+    version: ^1.3.0
+  espressif/iperf:
+    version: ~1.0.2
+  espressif/esp_xiaozhi: ^0.1.2
+  espressif/libpng: ^1.6.58~1
+  guition/guition_boards: "*"

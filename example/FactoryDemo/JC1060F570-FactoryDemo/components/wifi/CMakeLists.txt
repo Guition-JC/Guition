@@ -1,0 +1,21 @@
+idf_component_register(
+    SRCS
+        "wifi_service.c"
+        "wifi_credentials_nvs.c"
+        "wifi_connection.c"
+        "wifi_provisioning.c"
+        "provisioning_server.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        dns_captive
+        esp_event
+        esp_http_server
+        esp_netif
+        esp_timer
+        esp_wifi
+        i18n
+        nvs_flash
+        time
+    EMBED_FILES "provisioning.html"
+)

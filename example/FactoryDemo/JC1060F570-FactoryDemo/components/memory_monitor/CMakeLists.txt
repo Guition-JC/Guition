@@ -1,0 +1,10 @@
+idf_component_register(
+    SRCS
+        "memory_monitor.c"
+    INCLUDE_DIRS
+        "include"
+    REQUIRES
+        esp_partition
+        spi_flash
+        esp_timer
+)
