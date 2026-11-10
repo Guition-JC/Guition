@@ -23,7 +23,7 @@ ESP Board Manager 的完整用法见[组件文档](https://github.com/espressif/
 
 ## 兼容性
 
-当前版本为 `0.2.3`，依赖要求以 [idf_component.yml](idf_component.yml) 为准：
+当前版本为 `0.2.4`，依赖要求以 [idf_component.yml](idf_component.yml) 为准：
 
 | 依赖 | 版本 |
 | --- | --- |
@@ -118,7 +118,7 @@ source ~/.espressif/tools/activate_idf_v6.1.fish
 `idf.py add-dependency` 添加组件依赖，不会同时下载独立发布的示例工程。要运行 `display_lv_demo_widgets`，在用于存放工程的目录执行：
 
 ```bash
-idf.py create-project-from-example "guition/guition_boards=0.2.3:display_lv_demo_widgets"
+idf.py create-project-from-example "guition/guition_boards=0.2.4:display_lv_demo_widgets"
 cd display_lv_demo_widgets
 idf.py set-target esp32p4
 idf.py bmgr -b jc8012p4a1
@@ -127,16 +127,16 @@ idf.py build
 idf.py -p PORT flash monitor
 ```
 
-该流程以 `jc8012p4a1` 为例，将 `PORT` 替换为实际串口。创建示例的命令下载工程源码；首次配置或构建时，组件管理器会自动拉取 `guition_boards` 及其他依赖到 `managed_components/`。示例已声明 `guition_boards` 依赖，默认版本约束为 `"*"`，自动获取满足工程约束的版本，无须再次添加依赖。若需固定组件版本，在配置或构建前，将 `main/idf_component.yml` 中 `guition/guition_boards` 的版本改为 `"==0.2.3"`。
+该流程以 `jc8012p4a1` 为例，将 `PORT` 替换为实际串口。创建示例的命令下载工程源码；首次配置或构建时，组件管理器会自动拉取 `guition_boards` 及其他依赖到 `managed_components/`。示例已声明 `guition_boards` 依赖，默认版本约束为 `"*"`，自动获取满足工程约束的版本，无须再次添加依赖。若需固定组件版本，在配置或构建前，将 `main/idf_component.yml` 中 `guition/guition_boards` 的版本改为 `"==0.2.4"`。
 
-此命令要求组件中心的 `0.2.3` 版本已发布并包含 `display_lv_demo_widgets` 示例。若提示 `Cannot find example`，请检查该版本的 Examples 页面和示例名称；用法见[乐鑫示例工程文档](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/tools/idf-component-manager.html#creating-a-project-from-an-example)。
+此命令要求组件中心的 `0.2.4` 版本已发布并包含 `display_lv_demo_widgets` 示例。若提示 `Cannot find example`，请检查该版本的 Examples 页面和示例名称；用法见[乐鑫示例工程文档](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/tools/idf-component-manager.html#creating-a-project-from-an-example)。
 
 ### 在现有工程中添加组件
 
 将本组件复制到应用的 `components/guition_boards`。组件发布到组件中心后，也可通过以下命令添加：
 
 ```bash
-idf.py add-dependency "guition/guition_boards==0.2.3"
+idf.py add-dependency "guition/guition_boards==0.2.4"
 ```
 
 本组件已声明 ESP Board Manager 依赖；各板型所需的驱动依赖由 ESP Board Manager 按所选配置生成。
@@ -168,7 +168,7 @@ idf.py build
 idf.py -p PORT flash monitor
 ```
 
-示例在配置或构建时从乐鑫组件中心获取 `guition/guition_boards` `0.2.3` 及其他依赖，下载到 `managed_components/`，无需复制板级组件或配置本地路径。初始化 LCD、触摸和背光后，循环全屏显示红、绿、蓝、白、黑五种颜色，每种持续 1 秒。刷新分辨率和像素格式来自所选板型的 BMGR 配置。示例不使用 LVGL，也不初始化音频或 SD 卡。
+示例在配置或构建时从乐鑫组件中心获取 `guition/guition_boards` `0.2.4` 及其他依赖，下载到 `managed_components/`，无需复制板级组件或配置本地路径。初始化 LCD、触摸和背光后，循环全屏显示红、绿、蓝、白、黑五种颜色，每种持续 1 秒。刷新分辨率和像素格式来自所选板型的 BMGR 配置。示例不使用 LVGL，也不初始化音频或 SD 卡。
 
 MIPI DSI / RGB 使用双帧缓冲，在空闲缓冲区完成整帧绘制，并等待驱动的帧切换完成事件后复用旧缓冲区，以避免写入正在扫描的画面。板级配置需提供至少两个帧缓冲；各接口的同步要求见 [board_init 示例](examples/board_init/README.md)。
 

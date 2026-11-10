@@ -1,0 +1,4 @@
+[submodule "example/xiaozhi-esp32"]
+	path = example/xiaozhi-esp32
+	url = https://github.com/Deep-start9527/xiaozhi-esp32.git
+	branch = guition

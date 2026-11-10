@@ -36,7 +36,7 @@ After activation, ESP-IDF trusts the `espressif/esp_board_manager` extension
 downloaded from the ESP Component Registry. This workflow does not require
 setting `IDF_EXTENSION_ALLOW_UNTRUSTED` manually to use `bmgr`.
 
-The manifest downloads `guition/guition_boards` 0.2.3 from the ESP Component
+The manifest downloads `guition/guition_boards` 0.2.4 from the ESP Component
 Registry during configuration or build. Copy only this example to a separate
 workspace; its dependencies are installed in `managed_components/`.
 Run from the copied example directory:

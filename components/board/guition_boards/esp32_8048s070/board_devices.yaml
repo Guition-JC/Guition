@@ -30,12 +30,12 @@ devices:
           pclk_hz: 16000000
           h_res: 800
           v_res: 480
-          hsync_pulse_width: 4
-          hsync_back_porch: 8
-          hsync_front_porch: 8
-          vsync_pulse_width: 4
-          vsync_back_porch: 8
-          vsync_front_porch: 8
+          hsync_pulse_width: 30
+          hsync_back_porch: 16
+          hsync_front_porch: 210
+          vsync_pulse_width: 13
+          vsync_back_porch: 10
+          vsync_front_porch: 22
           flags:
             pclk_active_neg: false
         flags:

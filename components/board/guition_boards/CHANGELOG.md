@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.4
+
+- Fix abnormal display output on `esp32_8048s070` by correcting the RGB LCD sync timings: horizontal pulse width/back porch/front porch to 30/16/210 and vertical pulse width/back porch/front porch to 13/10/22.
+
 ## 0.2.1
 
 - Add `audio_adc` PDM input on I2S0 for `jc3636f118`, `jc3636k518`, `jc3636k718` and `jc3636w518`, with PDM-to-PCM conversion and default 16 kHz, 16-bit stereo capture.
